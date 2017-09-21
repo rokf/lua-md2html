@@ -4,7 +4,7 @@ local M = {}
 
 function M.convert(md,classes)
   local pattern = re.compile([[
-  default <- {| (title / para / %nl)* |} -> join
+  default <- {| (title / hr / quote / para / %nl)* |} -> join
   title <- {| {:depth: '#'+ :} %s* {:title: [^%nl]+ :} %nl |} -> to_title
   para <- {| (img / link / b / i / ub / ui / s / text)+ |} -> concat
   b <- {| '**' {:b: {| (ui / {[^*]})+ |} :} '**' |} -> to_b
@@ -17,7 +17,12 @@ function M.convert(md,classes)
   linkpat <- {| '[' {:txt: [^] ]+ :} ']' %s* '(' {:url: [^%s)]+ :} %s* link_title^-1 ')' |}
   link_title <- '"' {:title:  { [^"]+ }  :} '"'
   text <- { [^*~_%nl[!]+ }
+  hr <- { '---' / '***' / '___' } -> '<hr>'
+  quote <- {| ('>' %s+ { [^%nl]+ } %nl)+ |} -> to_quote
 ]],{
+  to_quote = function (t)
+    return string.format('<blockquote class="%s">%s</blockquote>',classes.blockquote or "",table.concat(t,' '))
+  end,
   to_title = function (t)
     local depth = #t.depth
     if depth == 1 then
