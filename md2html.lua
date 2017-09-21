@@ -4,9 +4,9 @@ local M = {}
 
 function M.convert(md,classes)
   local pattern = re.compile([[
-  default <- {| (title / hr / quote / para / %nl)* |} -> join
+  default <- {| (title / ml_code / hr / quote / para / %nl)* |} -> join
   title <- {| {:depth: '#'+ :} %s* {:title: [^%nl]+ :} %nl |} -> to_title
-  para <- {| (img / link / b / i / ub / ui / s / text)+ |} -> concat
+  para <- {| (img / link / b / i / ub / ui / s / sl_code / text)+ |} -> concat
   b <- {| '**' {:b: {| (ui / {[^*]})+ |} :} '**' |} -> to_b
   ub <- {| '__' {:b: {| {[^_]+} |}  :} '__' |} -> to_b
   i <- {| '*' {:i: [^*]+ :} '*' |} -> to_i
@@ -16,10 +16,15 @@ function M.convert(md,classes)
   link <- linkpat -> to_a
   linkpat <- {| '[' {:txt: [^] ]+ :} ']' %s* '(' {:url: [^%s)]+ :} %s* link_title^-1 ')' |}
   link_title <- '"' {:title:  { [^"]+ }  :} '"'
-  text <- { [^*~_%nl[!]+ }
+  text <- { [^*~_%nl[!`]+ }
   hr <- { '---' / '***' / '___' } -> '<hr>'
   quote <- {| ('>' %s+ { [^%nl]+ } %nl)+ |} -> to_quote
+  sl_code <- ('`' { [^`]* } '`') -> to_code
+  ml_code <- ('```' { [^`]* } '```') -> to_code
 ]],{
+  to_code = function (txt)
+    return string.format('<code class="%s">%s</code>',classes.code or "", txt)
+  end,
   to_quote = function (t)
     return string.format('<blockquote class="%s">%s</blockquote>',classes.blockquote or "",table.concat(t,' '))
   end,

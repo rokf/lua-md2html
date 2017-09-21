@@ -21,6 +21,14 @@ A __bold__ and [link](http://www.google.com "Link Title") in this paragraph.
 > Here is a quote.
 > Same quote, additional line.
 
+Some `code` inside a paragraph.
+
+```
+big
+multiline
+code
+snippet
+```
 ___
 ]]
 
