@@ -4,7 +4,7 @@ local example = [[
 ## Hello
 
 This is some **fat** text.
-Paragraphs are split on each newline, fix?.
+If lines hold together they land up in the same paragraph.
 
 ***
 

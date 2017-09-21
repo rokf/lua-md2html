@@ -6,7 +6,8 @@ function M.convert(md,classes)
   local pattern = re.compile([[
   default <- {| (title / list / ml_code / hr / quote / para / %nl)* |} -> join
   title <- {| {:depth: '#'+ :} %s* {:title: [^%nl]+ :} %nl |} -> to_title
-  para <- {| (img / link / b / i / ub / ui / s / sl_code / text)+ |} -> concat
+  para <- {| paraline+ |} -> concat
+  paraline <- {| (img / link / b / i / ub / ui / s / sl_code / text)+ %nl |} -> concat_line
   b <- {| '**' {:b: {| (ui / {[^*]})+ |} :} '**' |} -> to_b
   ub <- {| '__' {:b: {| {[^_]+} |}  :} '__' |} -> to_b
   i <- {| '*' {:i: [^*]+ :} '*' |} -> to_i
@@ -82,7 +83,10 @@ function M.convert(md,classes)
     return string.format('<s class="%s">%s</s>',classes.s or "",t.s)
   end,
   concat = function (t)
-    return string.format('<p class="%s">%s</p>',classes.p or "",table.concat(t))
+    return string.format('<p class="%s">%s</p>',classes.p or "",table.concat(t, ' '))
+  end,
+  concat_line = function (t)
+    return table.concat(t)
   end,
   join = function (t)
     return table.concat(t,"\n")
