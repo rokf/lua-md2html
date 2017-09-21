@@ -4,7 +4,7 @@ local M = {}
 
 function M.convert(md,classes)
   local pattern = re.compile([[
-  default <- {| (title / ml_code / hr / quote / para / %nl)* |} -> join
+  default <- {| (title / list / ml_code / hr / quote / para / %nl)* |} -> join
   title <- {| {:depth: '#'+ :} %s* {:title: [^%nl]+ :} %nl |} -> to_title
   para <- {| (img / link / b / i / ub / ui / s / sl_code / text)+ |} -> concat
   b <- {| '**' {:b: {| (ui / {[^*]})+ |} :} '**' |} -> to_b
@@ -21,7 +21,24 @@ function M.convert(md,classes)
   quote <- {| ('>' %s+ { [^%nl]+ } %nl)+ |} -> to_quote
   sl_code <- ('`' { [^`]* } '`') -> to_code
   ml_code <- ('```' { [^`]* } '```') -> to_code
+  list <- ulist / olist
+  ulist <- {| ([-+] %s+ { [^%nl]+ } %nl)+ |} -> to_ulist
+  olist <- {| ([0-9]+ '.' %s+ { [^%nl]+ } %nl)+ |} -> to_olist
 ]],{
+  to_ulist = function (t)
+    local li_list = {}
+    for _,v in ipairs(t) do
+      table.insert(li_list, string.format('<li class="%s">%s</li>',classes.li or "",v))
+    end
+    return string.format('<ul class="%s">%s</ul>',classes.ul or "",table.concat(li_list))
+  end,
+  to_olist = function (t)
+    local li_list = {}
+    for _,v in ipairs(t) do
+      table.insert(li_list, string.format('<li class="%s">%s</li>',classes.li or "",v))
+    end
+    return string.format('<ol class="%s">%s</ol>',classes.ol or "",table.concat(li_list))
+  end,
   to_code = function (txt)
     return string.format('<code class="%s">%s</code>',classes.code or "", txt)
   end,

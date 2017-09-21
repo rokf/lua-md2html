@@ -23,12 +23,19 @@ A __bold__ and [link](http://www.google.com "Link Title") in this paragraph.
 
 Some `code` inside a paragraph.
 
+1. A
+2. B
+3. C
+
 ```
 big
 multiline
 code
 snippet
 ```
+- A
+- B
+- C
 ___
 ]]
 
