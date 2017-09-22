@@ -11,7 +11,7 @@ local M = {}
 
 function M.convert(md,classes)
   local pattern = re.compile([[
-  default <- {| (title / list / ml_code / hr / quote / para / %nl)* |} -> join
+  default <- {| (title / list / ml_code / hr / quote / para / %nl / '\r')* |} -> join
   title <- {| {:depth: '#'+ :} %s* {:title: [^%nl]+ :} %nl |} -> to_title
   para <- {| paraline+ |} -> concat
   paraline <- {| (img / link / b / i / ub / ui / s / sl_code / text)+ %nl |} -> concat_line
