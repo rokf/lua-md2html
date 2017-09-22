@@ -1,5 +1,12 @@
 local re = require 're'
 
+local function class_str(cls)
+  if cls then
+    return string.format(' class="%s"', cls)
+  end
+  return ""
+end
+
 local M = {}
 
 function M.convert(md,classes)
@@ -25,73 +32,58 @@ function M.convert(md,classes)
   list <- ulist / olist
   ulist <- {| ([-+] %s+ { [^%nl]+ } %nl)+ |} -> to_ulist
   olist <- {| ([0-9]+ '.' %s+ { [^%nl]+ } %nl)+ |} -> to_olist
-]],{
-  to_ulist = function (t)
-    local li_list = {}
-    for _,v in ipairs(t) do
-      table.insert(li_list, string.format('<li class="%s">%s</li>',classes.li or "",v))
+  ]],{
+    to_ulist = function (t)
+      local li_list = {}
+      for _,v in ipairs(t) do
+        table.insert(li_list, string.format('<li%s>%s</li>',class_str(classes.li),v))
+      end
+      return string.format('<ul%s>%s</ul>',class_str(classes.ul),table.concat(li_list))
+    end,
+    to_olist = function (t)
+      local li_list = {}
+      for _,v in ipairs(t) do
+        table.insert(li_list, string.format('<li%s>%s</li>',class_str(classes.li),v))
+      end
+      return string.format('<ol%s>%s</ol>',class_str(classes.ol),table.concat(li_list))
+    end,
+    to_code = function (txt)
+      return string.format('<code%s>%s</code>',class_str(classes.code), txt)
+    end,
+    to_quote = function (t)
+      return string.format('<blockquote%s>%s</blockquote>',class_str(classes.blockquote),table.concat(t,' '))
+    end,
+    to_title = function (t)
+      local depth = #t.depth
+      return string.format('<h%d%s>%s</h%d>',depth,class_str(classes["h"..tostring(depth)]),t.title,depth)
+    end,
+    to_a = function (t)
+      local lt = ""; if t.title then lt = ' title="' .. t.title .. '"' end
+      return string.format('<a href="%s"%s%s>%s</a>',t.url,class_str(classes.a),lt,t.txt)
+    end,
+    to_img = function (t)
+      local lt = ""; if t.title then lt = ' title="' .. t.title .. '"' end
+      return string.format('<img src="%s"%salt="%s"%s>',t.url,class_str(classes.img),t.txt,lt)
+    end,
+    to_i = function (t)
+      return string.format('<i%s>%s</i>',class_str(classes.i),t.i)
+    end,
+    to_b = function (t)
+      return string.format('<b%s>%s</b>',class_str(classes.b), table.concat(t.b))
+    end,
+    to_s = function (t)
+      return string.format('<s%s>%s</s>',class_str(classes.s),t.s)
+    end,
+    concat = function (t)
+      return string.format('<p%s>%s</p>',class_str(classes.p),table.concat(t, ' '))
+    end,
+    concat_line = function (t)
+      return table.concat(t)
+    end,
+    join = function (t)
+      return table.concat(t,"\n")
     end
-    return string.format('<ul class="%s">%s</ul>',classes.ul or "",table.concat(li_list))
-  end,
-  to_olist = function (t)
-    local li_list = {}
-    for _,v in ipairs(t) do
-      table.insert(li_list, string.format('<li class="%s">%s</li>',classes.li or "",v))
-    end
-    return string.format('<ol class="%s">%s</ol>',classes.ol or "",table.concat(li_list))
-  end,
-  to_code = function (txt)
-    return string.format('<code class="%s">%s</code>',classes.code or "", txt)
-  end,
-  to_quote = function (t)
-    return string.format('<blockquote class="%s">%s</blockquote>',classes.blockquote or "",table.concat(t,' '))
-  end,
-  to_title = function (t)
-    local depth = #t.depth
-    if depth == 1 then
-      return string.format('<h%d class="%s">%s</h%d>',depth,classes.h1 or "",t.title,depth)
-    elseif depth == 2 then
-      return string.format('<h%d class="%s">%s</h%d>',depth,classes.h2 or "",t.title,depth)
-    elseif depth == 3 then
-      return string.format('<h%d class="%s">%s</h%d>',depth,classes.h3 or "",t.title,depth)
-    elseif depth == 4 then
-      return string.format('<h%d class="%s">%s</h%d>',depth,classes.h4 or "",t.title,depth)
-    end
-  end,
-  to_a = function (t)
-    local lt = ""
-    if t.title then
-      lt = ' title="' .. t.title .. '"'
-    end
-    -- return '<a href="' .. t.url .. '"' .. lt .. '>' .. t.txt .. '</a>'
-    return string.format('<a href="%s" class="%s"%s>%s</a>',t.url,classes.a or "",lt,t.txt)
-  end,
-  to_img = function (t)
-    local lt = ""
-    if t.title then
-      lt = ' title="' .. t.title .. '"'
-    end
-    return string.format('<img src="%s" class="%s" alt="%s"%s>',t.url,classes.img or "",t.txt,lt)
-  end,
-  to_i = function (t)
-    return string.format('<i class="%s">%s</i>',classes.i or "",t.i)
-  end,
-  to_b = function (t)
-    return string.format('<b class="%s">%s</b>',classes.b or "", table.concat(t.b))
-  end,
-  to_s = function (t)
-    return string.format('<s class="%s">%s</s>',classes.s or "",t.s)
-  end,
-  concat = function (t)
-    return string.format('<p class="%s">%s</p>',classes.p or "",table.concat(t, ' '))
-  end,
-  concat_line = function (t)
-    return table.concat(t)
-  end,
-  join = function (t)
-    return table.concat(t,"\n")
-  end
-})
+  })
   return pattern:match(md)
 end
 
