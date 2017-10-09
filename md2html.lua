@@ -26,7 +26,7 @@ function M.convert(md,classes)
   link_title <- '"' {:title:  { [^"]+ }  :} '"'
   text <- { [^*~_%nl[!`]+ }
   hr <- { '---' / '***' / '___' } -> '<hr>'
-  quote <- {| ('>' %s+ { [^%nl]+ } %nl)+ |} -> to_quote
+  quote <- {| ('>' %s+ paraline)+ |} -> to_quote
   sl_code <- ('`' { [^`]* } '`') -> to_code
   ml_code <- ('```' { [^`]* } '```') -> to_code
   list <- ulist / olist
